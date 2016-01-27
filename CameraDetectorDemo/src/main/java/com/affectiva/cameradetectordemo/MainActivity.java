@@ -2,6 +2,7 @@ package com.affectiva.cameradetectordemo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -28,6 +29,9 @@ import java.util.List;
 // Add this to the header of your file:
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
+import com.facebook.messenger.MessengerThreadParams;
+import com.facebook.messenger.MessengerUtils;
+import com.facebook.messenger.ShareToMessengerParams;
 
 
 /**
@@ -102,12 +106,37 @@ public class MainActivity extends Activity implements Detector.ImageListener, Ca
             @Override
             public void onClick(View v) {
 
-                Intent sendIntent = new Intent();
-                sendIntent.setAction(Intent.ACTION_SEND);
-                sendIntent.putExtra(Intent.EXTRA_TEXT, theEmoji.getUnicode());
-                sendIntent.setType("text/plain");
-                startActivity(sendIntent);
-                //startActivity(Intent.createChooser(sendIntent, theEmoji.getUnicode()));
+                Intent intent = getIntent();
+
+                if (Intent.ACTION_PICK.equals(intent.getAction())) {
+
+                    MessengerThreadParams mThreadParams = MessengerUtils.getMessengerThreadParamsForIntent(intent);
+
+                    String metadata = mThreadParams.metadata;
+                    List<String> participantIds = mThreadParams.participants;
+
+                    Uri contentUri = Uri.parse("https://raw.githubusercontent.com/Ranks/emojione/master/assets/png_512x512/1f600.png");
+
+                    ShareToMessengerParams shareToMessengerParams =
+                            ShareToMessengerParams.newBuilder(contentUri, "image/jpeg")
+                                    .setMetaData("{ \"image\" : \"trees\" }")
+                                    .build();
+
+                    MessengerUtils.finishShareToMessenger(MainActivity.this, shareToMessengerParams);
+                    //mPicking = true;
+                    //MessengerThreadParams mThreadParams = MessengerUtils.getMessengerThreadParamsForIntent(intent);
+
+                    //String metadata = mThreadParams.metadata;
+                    //List<String> participantIds = mThreadParams.participants;
+                }
+                else {
+                    Intent sendIntent = new Intent();
+                    sendIntent.setAction(Intent.ACTION_SEND);
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, theEmoji.getUnicode());
+                    sendIntent.setType("text/plain");
+                    startActivity(sendIntent);
+
+                }
 
             }
 
